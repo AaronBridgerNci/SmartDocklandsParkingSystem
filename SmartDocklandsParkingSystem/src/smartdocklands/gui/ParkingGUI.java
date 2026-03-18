@@ -5,7 +5,8 @@
 package smartdocklands.gui;
 import smartdocklands.manager.ParkingManager;
 import smartdocklands.models.Car;
-
+import smartdocklands.models.ElectricCar;
+import smartdocklands.models.ParkingSpot;
 /**
  *
  * @author Aaron
@@ -19,6 +20,11 @@ public class ParkingGUI extends javax.swing.JFrame {
      */
     public ParkingGUI() {
         initComponents();
+        setLocationRelativeTo(null);
+        
+    manager.addParkingSpot(new ParkingSpot(1));
+    manager.addParkingSpot(new ParkingSpot(2));
+    manager.addParkingSpot(new ParkingSpot(3));
     }
 
     /**
@@ -36,6 +42,10 @@ public class ParkingGUI extends javax.swing.JFrame {
         txtPlate = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
         txtOutput = new javax.swing.JTextArea();
+        btnAddElectric = new javax.swing.JButton();
+        btnDisplaySpots = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        btnRecentVehicles = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setAlwaysOnTop(true);
@@ -49,30 +59,55 @@ public class ParkingGUI extends javax.swing.JFrame {
         btnAddCar.setText("Add Car");
         btnAddCar.addActionListener(this::btnAddCarActionPerformed);
 
+        txtOutput.setEditable(false);
         txtOutput.setColumns(20);
+        txtOutput.setLineWrap(true);
         txtOutput.setRows(5);
+        txtOutput.setWrapStyleWord(true);
         jScrollPane1.setViewportView(txtOutput);
+
+        btnAddElectric.setText("Add Electric Car");
+        btnAddElectric.addActionListener(this::btnAddElectricActionPerformed);
+
+        btnDisplaySpots.setText("Display Parking Spots");
+        btnDisplaySpots.addActionListener(this::btnDisplaySpotsActionPerformed);
+
+        jLabel2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel2.setText("Display Parking :");
+
+        btnRecentVehicles.setText("Show Recent Vehicles");
+        btnRecentVehicles.addActionListener(this::btnRecentVehiclesActionPerformed);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGap(27, 27, 27)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 620, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(220, 220, 220)
+                        .addComponent(btnAddCar)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnRecentVehicles)
+                        .addGap(134, 134, 134)
+                        .addComponent(btnAddElectric)))
+                .addContainerGap(53, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(jLabel1))
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
                         .addComponent(lblPlate)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtPlate, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnAddCar))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(27, 27, 27)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(196, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel2)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btnDisplaySpots)
+                .addGap(122, 122, 122))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -82,24 +117,65 @@ public class ParkingGUI extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblPlate)
                     .addComponent(txtPlate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnAddCar))
+                    .addComponent(btnDisplaySpots)
+                    .addComponent(jLabel2))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 286, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnAddElectric)
+                    .addComponent(btnAddCar)
+                    .addComponent(btnRecentVehicles))
+                .addGap(0, 257, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnAddCarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddCarActionPerformed
-        String plate = txtPlate.getText();
+        String plate = txtPlate.getText().trim();
+        if (plate.isEmpty()) {
+          txtOutput.setText("Please enter a plate number.");
+    return;
+}
+        
+     Car car = new Car(plate);
+     String message = manager.parkVehicleWithMessage(car);
 
-Car car = new Car(plate);
-
-manager.addVehicle(car);
-
-txtOutput.setText(manager.displayWaitingVehicles().replace(";", "\n"));
+    txtOutput.setText(manager.displayParkingSpots());
+    
+    javax.swing.JOptionPane.showMessageDialog(this, message);
+    txtPlate.setText("");
+    txtPlate.requestFocus();
     }//GEN-LAST:event_btnAddCarActionPerformed
+
+    private void btnAddElectricActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddElectricActionPerformed
+        String plate = txtPlate.getText().trim();
+        if (plate.isEmpty()) {
+          txtOutput.setText("Please enter a plate number.");
+    return;
+}
+
+     ElectricCar car = new ElectricCar(plate);
+     String message = manager.parkVehicleWithMessage(car);
+
+     txtOutput.setText(manager.displayParkingSpots());
+     
+     javax.swing.JOptionPane.showMessageDialog(this, message);
+     txtPlate.setText("");
+     txtPlate.requestFocus();
+     
+    }//GEN-LAST:event_btnAddElectricActionPerformed
+
+    private void btnDisplaySpotsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDisplaySpotsActionPerformed
+       txtOutput.setText(manager.displayParkingSpots());
+       txtPlate.setText("");
+       txtPlate.requestFocus();
+    }//GEN-LAST:event_btnDisplaySpotsActionPerformed
+
+    private void btnRecentVehiclesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRecentVehiclesActionPerformed
+        txtOutput.setText(manager.displayRecentVehicles().replace(";", "\n"));
+    }//GEN-LAST:event_btnRecentVehiclesActionPerformed
 
     /**
      * @param args the command line arguments
@@ -128,7 +204,11 @@ txtOutput.setText(manager.displayWaitingVehicles().replace(";", "\n"));
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddCar;
+    private javax.swing.JButton btnAddElectric;
+    private javax.swing.JButton btnDisplaySpots;
+    private javax.swing.JButton btnRecentVehicles;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblPlate;
     private javax.swing.JTextArea txtOutput;
